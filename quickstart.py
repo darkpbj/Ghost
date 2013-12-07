@@ -9,8 +9,8 @@ from oauth2client.client import OAuth2WebServerFlow
 
 
 # Copy your credentials from the console
-CLIENT_ID = '575210548661-iv84nee7frdkmtghei4ca9u2056k6srj.apps.googleusercontent.com'
-CLIENT_SECRET = 'r5e5zu794cFW7UDAhaoajisl'
+CLIENT_ID = '510763562071-0j32rsqmra7jfsabt74vhknje9gsir55.apps.googleusercontent.com'
+CLIENT_SECRET = 'Xi-qFx72hFimUWibH7zLvq06'
 
 # Check https://developers.google.com/drive/scopes for all available scopes
 OAUTH_SCOPE = 'https://www.googleapis.com/auth/drive'

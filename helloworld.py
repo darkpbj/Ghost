@@ -8,6 +8,11 @@ import webapp2
 import os
 from google.appengine.ext.webapp import template
 
+from apiclient.discovery import build
+from apiclient.http import MediaFileUpload
+from oauth2client.client import OAuth2WebServerFlow
+
+
 class Greeting(db.Model):
   """Models an individual Guestbook entry with an author, content, and date."""
   author = db.UserProperty()
@@ -20,36 +25,47 @@ def guestbook_key(guestbook_name=None):
   return db.Key.from_path('Guestbook', guestbook_name or 'default_guestbook')
 
 class MainPage(webapp2.RequestHandler):
+  def get(self):
+    """guestbook_name=self.request.get('guestbook_name')
+    greetings_query = Greeting.all().ancestor(
+        guestbook_key(guestbook_name)).order('-date')
+    greetings = greetings_query.fetch(10)
 
-    def get(self):
+    if users.get_current_user():
+        url = users.create_logout_url(self.request.uri)
+        url_linktext = 'Logout'
+    else:
+        url = users.create_login_url(self.request.uri)
+        url_linktext = 'Login'
+        """
+    template_values = {
+        'greetings': "fuck off",
+        'url': "example.com",
+        'url_linktext': "clicky",
+    }
 
-        guestbook_name=self.request.get('guestbook_name')
-        greetings_query = Greeting.all().ancestor(
-            guestbook_key(guestbook_name)).order('-date')
-        greetings = greetings_query.fetch(10)
+    path = os.path.join(os.path.dirname(__file__), 'index.html')
+    self.response.out.write(template.render(path, template_values))
 
-        if users.get_current_user():
-            url = users.create_logout_url(self.request.uri)
-            url_linktext = 'Logout'
-        else:
-            url = users.create_login_url(self.request.uri)
-            url_linktext = 'Login'
+class Setup(webapp2.RequestHandler):
+  step = 1;
+  CLIENT_ID = '510763562071-0j32rsqmra7jfsabt74vhknje9gsir55.apps.googleusercontent.com'
+  CLIENT_SECRET = 'Xi-qFx72hFimUWibH7zLvq06'
+  # Check https://developers.google.com/drive/scopes for all available scopes
+  OAUTH_SCOPE = 'https://www.googleapis.com/auth/drive'
+  # Redirect URI for installed apps
+  REDIRECT_URI = 'urn:ietf:wg:oauth:2.0:oob'
+  # Path to the file to upload
+  FILENAME = 'localTest.txt'
 
-        template_values = {
-            'greetings': greetings,
-            'url': url,
-            'url_linktext': url_linktext,
-        }
+  def get(self):
+    if(self.step == 1)
+      self.flow = OAuth2WebServerFlow(CLIENT_ID, CLIENT_SECRET, OAUTH_SCOPE, REDIRECT_URI);
+      authorize_url = flow.step1_get_authorize_url()
+      self.redirect(authorize_url);
+      self.step = 2;
+    else if(self.step == 2)
 
-        path = os.path.join(os.path.dirname(__file__), 'index.html')
-        self.response.out.write(template.render(path, template_values))
-
-class Guestbook(webapp2.RequestHandler):
-  def post(self):
-    # We set the same parent key on the 'Greeting' to ensure each greeting is in
-    # the same entity group. Queries across the single entity group will be
-    # consistent. However, the write rate to a single entity group should
-    # be limited to ~1/second.
     guestbook_name = self.request.get('guestbook_name')
     greeting = Greeting(parent=guestbook_key(guestbook_name))
 
@@ -59,11 +75,12 @@ class Guestbook(webapp2.RequestHandler):
     greeting.content = self.request.get('content')
     greeting.put()
     self.redirect('/?' + urllib.urlencode({'guestbook_name': guestbook_name}))
-
+  def post(self):
+    self.redirect('http://example.com')
 
 app = webapp2.WSGIApplication([
   ('/', MainPage),
-  ('/sign', Guestbook)
+  ('/setup', Setup)
 ], debug=True)
 
 
