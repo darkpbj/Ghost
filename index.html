@@ -1,0 +1,25 @@
+<html>
+  <head>
+    <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" rel="stylesheet">
+    <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>
+  </head>
+  <body>
+    <div class='container'>
+    {% for greeting in greetings %}
+      {% if greeting.author %}
+        <b>{{ greeting.author.nickname }}</b> wrote:
+      {% else %}
+        An anonymous person wrote:
+      {% endif %}
+      <blockquote>{{ greeting.content|escape }}</blockquote>
+    {% endfor %}
+
+    <form action="/sign" method="post">
+      <div><textarea name="content" rows="3" cols="60" class='form-control'></textarea></div>
+      <div><input type="submit" value="Sign Guestbook" class='btn btn-primary'></div>
+    </form>
+
+    <a href="{{ url }}">{{ url_linktext }}</a>
+    </div>
+  </body>
+</html>
