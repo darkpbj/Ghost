@@ -7,7 +7,10 @@ from google.appengine.api import users
 import webapp2
 import os
 from google.appengine.ext.webapp import template
-
+import pprint
+import pickle
+from google.appengine.api import memcache
+from google.appengine.api import users
 from apiclient.discovery import build
 from apiclient.http import MediaFileUpload
 from oauth2client.client import OAuth2WebServerFlow
@@ -26,6 +29,8 @@ def guestbook_key(guestbook_name=None):
 
 class MainPage(webapp2.RequestHandler):
   def get(self):
+    credentials = memcache.get("credentials")
+
     """guestbook_name=self.request.get('guestbook_name')
     greetings_query = Greeting.all().ancestor(
         guestbook_key(guestbook_name)).order('-date')
@@ -37,7 +42,7 @@ class MainPage(webapp2.RequestHandler):
     else:
         url = users.create_login_url(self.request.uri)
         url_linktext = 'Login'
-        """
+        
     template_values = {
         'greetings': "fuck off",
         'url': "example.com",
@@ -45,10 +50,9 @@ class MainPage(webapp2.RequestHandler):
     }
 
     path = os.path.join(os.path.dirname(__file__), 'index.html')
-    self.response.out.write(template.render(path, template_values))
+    self.response.out.write(template.render(path, template_values"""
 
 class Setup(webapp2.RequestHandler):
-  step = 1;
   CLIENT_ID = '510763562071-0j32rsqmra7jfsabt74vhknje9gsir55.apps.googleusercontent.com'
   CLIENT_SECRET = 'Xi-qFx72hFimUWibH7zLvq06'
   # Check https://developers.google.com/drive/scopes for all available scopes
@@ -59,22 +63,18 @@ class Setup(webapp2.RequestHandler):
   FILENAME = 'localTest.txt'
 
   def get(self):
-    if(self.step == 1)
-      self.flow = OAuth2WebServerFlow(CLIENT_ID, CLIENT_SECRET, OAUTH_SCOPE, REDIRECT_URI);
+    if memcache.get("flow") == None :
+      flow = OAuth2WebServerFlow(self.CLIENT_ID, self.CLIENT_SECRET, self.OAUTH_SCOPE, self.REDIRECT_URI)
       authorize_url = flow.step1_get_authorize_url()
-      self.redirect(authorize_url);
-      self.step = 2;
-    else if(self.step == 2)
+      memcache.set("flow", pickle.dumps(flow))
+      self.redirect(authorize_url)
+    else:
+      flow = pickle.loads(memcache.get("flow"))
+      code = self.request.get('verification_code').strip()
+      credentials = flow.step2_exchange(code)
+      memcache.set("credentials", pickle.dumps(credentials))
+      self.response.out.write("yo from else")
 
-    guestbook_name = self.request.get('guestbook_name')
-    greeting = Greeting(parent=guestbook_key(guestbook_name))
-
-    if users.get_current_user():
-      greeting.author = users.get_current_user()
-
-    greeting.content = self.request.get('content')
-    greeting.put()
-    self.redirect('/?' + urllib.urlencode({'guestbook_name': guestbook_name}))
   def post(self):
     self.redirect('http://example.com')
 
